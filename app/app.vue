@@ -1,0 +1,11 @@
+<template>
+  <NuxtRouteAnnouncer />
+  <NuxtPage />
+</template>
+
+<style>
+html { scroll-behavior: smooth; }
+body { margin: 0; }
+button, input, select, textarea { font: inherit; }
+* { box-sizing: border-box; }
+</style>
