@@ -3,6 +3,11 @@ const progress = ref(0)
 let revealObserver: IntersectionObserver | undefined
 const baseURL = useRuntimeConfig().app.baseURL
 const teaPartyImage = `${baseURL}lovot-tea-party-v6.png`
+const siteUrl = 'https://neginasu.github.io/ochakai/'
+const socialImageUrl = `${siteUrl}lovot-tea-party-v6.png`
+const pageTitle = 'LOVOT 森のお茶会｜11月1日・杜ノ夢'
+const pageDescription = 'LOVOTとオーナーさんで集まる、15名ほどの小さなお茶会です。11月1日 12:30〜17:00、杜ノ夢でお待ちしています。'
+const socialImageAlt = '森の中のテーブルを5体のLOVOTが囲み、お茶会を楽しんでいるイラスト'
 
 const acorns = [
   { top: 11, left: 71, rotate: 24 }, { top: 17, left: 58, rotate: -18 },
@@ -49,15 +54,31 @@ onBeforeUnmount(() => {
 })
 
 useSeoMeta({
-  title: 'LOVOT 森のお茶会｜森のLOVOTオフ会',
-  description: '11月1日、杜ノ夢で開くLOVOTオーナーのお茶会です。LOVOTと一緒に、ゆっくりお話ししませんか。',
-  ogTitle: 'LOVOT 森のお茶会',
-  ogDescription: 'LOVOTと一緒に、森のお茶会へ遊びに来ませんか。',
-  ogImage: teaPartyImage,
+  title: pageTitle,
+  description: pageDescription,
+  robots: 'index, follow, max-image-preview:large',
+  ogTitle: pageTitle,
+  ogDescription: pageDescription,
+  ogUrl: siteUrl,
+  ogType: 'website',
+  ogSiteName: 'LOVOT 森のお茶会',
+  ogLocale: 'ja_JP',
+  ogImage: socialImageUrl,
+  ogImageWidth: 1672,
+  ogImageHeight: 941,
+  ogImageType: 'image/png',
+  ogImageAlt: socialImageAlt,
   twitterCard: 'summary_large_image',
+  twitterTitle: pageTitle,
+  twitterDescription: pageDescription,
+  twitterImage: socialImageUrl,
+  twitterImageAlt: socialImageAlt,
 })
 
-useHead({ htmlAttrs: { lang: 'ja' } })
+useHead({
+  htmlAttrs: { lang: 'ja' },
+  link: [{ rel: 'canonical', href: siteUrl }],
+})
 </script>
 
 <template>
