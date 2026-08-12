@@ -127,7 +127,7 @@ useHead({ htmlAttrs: { lang: 'ja' } })
       </div>
     </section>
 
-    <footer><i class="acorn small" aria-hidden="true"><b /><em /></i><p>LOVOT 森のお茶会<br><small>当日、お会いできるのを楽しみにしています。</small></p><a href="#top">ページの上へ ↑</a></footer>
+    <footer data-reveal><i class="acorn small" aria-hidden="true"><b /><em /></i><p>LOVOT 森のお茶会<br><small>当日、お会いできるのを楽しみにしています。</small></p><a href="#top">ページの上へ ↑</a></footer>
   </main>
 </template>
 
@@ -336,5 +336,67 @@ html,body{max-width:100%;overflow-x:clip}
 
 @media(max-width:700px){
   .card-two{top:70%}
+}
+
+/* Staggered scroll reveals */
+.motion-ready .story-card[data-reveal] > *,
+.motion-ready .info-card[data-reveal] > *,
+.motion-ready .arrival-copy[data-reveal] > *,
+.motion-ready footer[data-reveal] > *{
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .7s ease,transform .8s cubic-bezier(.22,1,.36,1);
+}
+.motion-ready .story-card[data-reveal].is-visible > *,
+.motion-ready .info-card[data-reveal].is-visible > *,
+.motion-ready .arrival-copy[data-reveal].is-visible > *,
+.motion-ready footer[data-reveal].is-visible > *{
+  opacity:1;
+  transform:translateY(0);
+}
+.motion-ready .story-card.is-visible > :nth-child(1),
+.motion-ready .info-card.is-visible > :nth-child(1),
+.motion-ready .arrival-copy.is-visible > :nth-child(1),
+.motion-ready footer.is-visible > :nth-child(1){transition-delay:.08s}
+.motion-ready .story-card.is-visible > :nth-child(2),
+.motion-ready .info-card.is-visible > :nth-child(2),
+.motion-ready .arrival-copy.is-visible > :nth-child(2),
+.motion-ready footer.is-visible > :nth-child(2){transition-delay:.18s}
+.motion-ready .story-card.is-visible > :nth-child(3),
+.motion-ready .info-card.is-visible > :nth-child(3),
+.motion-ready .arrival-copy.is-visible > :nth-child(3),
+.motion-ready footer.is-visible > :nth-child(3){transition-delay:.3s}
+.motion-ready .story-card.is-visible > :nth-child(4),
+.motion-ready .info-card.is-visible > :nth-child(4),
+.motion-ready .arrival-copy.is-visible > :nth-child(4){transition-delay:.42s}
+.motion-ready .arrival-copy.is-visible > :nth-child(5){transition-delay:.52s}
+.motion-ready .info-card[data-reveal] dl div,
+.motion-ready .story-card[data-reveal] .tags span{
+  opacity:0;
+  transform:translateY(12px);
+  transition:opacity .55s ease,transform .65s cubic-bezier(.22,1,.36,1);
+}
+.motion-ready .info-card.is-visible dl div,
+.motion-ready .story-card.is-visible .tags span{opacity:1;transform:none}
+.motion-ready .info-card.is-visible dl div:nth-child(1){transition-delay:.35s}
+.motion-ready .info-card.is-visible dl div:nth-child(2){transition-delay:.45s}
+.motion-ready .info-card.is-visible dl div:nth-child(3){transition-delay:.55s}
+.motion-ready .story-card.is-visible .tags span:nth-child(1){transition-delay:.38s}
+.motion-ready .story-card.is-visible .tags span:nth-child(2){transition-delay:.46s}
+.motion-ready .story-card.is-visible .tags span:nth-child(3){transition-delay:.54s}
+.motion-ready .story-card.is-visible .tags span:nth-child(4){transition-delay:.62s}
+.arrival-copy.is-visible h2{animation:none}
+
+@media(prefers-reduced-motion:reduce){
+  .motion-ready .story-card[data-reveal] > *,
+  .motion-ready .info-card[data-reveal] > *,
+  .motion-ready .arrival-copy[data-reveal] > *,
+  .motion-ready footer[data-reveal] > *,
+  .motion-ready .info-card[data-reveal] dl div,
+  .motion-ready .story-card[data-reveal] .tags span{
+    opacity:1;
+    transform:none;
+    transition:none;
+  }
 }
 </style>
