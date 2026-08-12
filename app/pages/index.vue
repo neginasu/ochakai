@@ -1,6 +1,8 @@
 <script setup lang="ts">
 const progress = ref(0)
 let revealObserver: IntersectionObserver | undefined
+const baseURL = useRuntimeConfig().app.baseURL
+const teaPartyImage = `${baseURL}lovot-tea-party-v6.png`
 
 const acorns = [
   { top: 11, left: 71, rotate: 24 }, { top: 17, left: 58, rotate: -18 },
@@ -51,7 +53,7 @@ useSeoMeta({
   description: '11月1日、杜ノ夢で開くLOVOTオーナーのお茶会です。LOVOTと一緒に、ゆっくりお話ししませんか。',
   ogTitle: 'LOVOT 森のお茶会',
   ogDescription: 'LOVOTと一緒に、森のお茶会へ遊びに来ませんか。',
-  ogImage: '/lovot-tea-party-v6.png',
+  ogImage: teaPartyImage,
   twitterCard: 'summary_large_image',
 })
 
@@ -116,7 +118,7 @@ useHead({ htmlAttrs: { lang: 'ja' } })
       <p class="almost" data-reveal>会場でお待ちしています。</p>
     </section>
 
-    <section id="join" class="arrival">
+    <section id="join" class="arrival" :style="{ backgroundImage: `url('${teaPartyImage}')` }">
       <div class="arrival-shade" />
       <div class="arrival-copy" data-reveal>
         <p class="eyebrow light">一緒にお茶を飲みませんか</p>
