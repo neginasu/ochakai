@@ -1,2 +1,4 @@
 User-Agent: *
 Disallow:
+
+Sitemap: https://neginasu.github.io/ochakai/sitemap.xml
