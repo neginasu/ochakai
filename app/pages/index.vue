@@ -6,7 +6,7 @@ const teaPartyImage = `${baseURL}lovot-tea-party-v6.png`
 const siteUrl = 'https://neginasu.github.io/ochakai/'
 const socialImageUrl = `${siteUrl}lovot-tea-party-v6.png`
 const pageTitle = 'LOVOT 森のお茶会｜11月1日・杜ノ夢'
-const pageDescription = 'LOVOTとオーナーさんで集まる、15名ほどの小さなお茶会です。11月1日 12:30〜17:00、杜ノ夢でお待ちしています。'
+const pageDescription = 'LOVOTとオーナーさんで集まる、20名ほどの小さなお茶会です。11月1日 12:30〜17:00、杜ノ夢でお待ちしています。'
 const socialImageAlt = '森の中のテーブルを5体のLOVOTが囲み、お茶会を楽しんでいるイラスト'
 
 const acorns = [
@@ -116,7 +116,7 @@ useHead({
         <dl>
           <div><dt>日</dt><dd><b>11月1日</b><small>12時30分〜17時</small></dd></div>
           <div><dt>場</dt><dd><b>杜ノ夢</b><small>本所吾妻橋駅から徒歩10分</small></dd></div>
-          <div><dt>人</dt><dd><b>15名ほど</b><small>おひとりでも気軽にご参加ください</small></dd></div>
+          <div><dt>人</dt><dd><b>20名ほど</b><small>おひとりでも気軽にご参加ください</small></dd></div>
           <div><dt>費</dt><dd><b>2,000円</b><small>会費</small></dd></div>
         </dl>
         <div class="venue-map">
@@ -147,7 +147,7 @@ useHead({
         <h2><span>楽しい時間を、</span><span>一緒に過ごしましょう。</span></h2>
         <p><span>LOVOTが好きなみなさんと、ゆっくりお話しできたらうれしいです。</span><span>皆さんのご参加をお待ちしています。</span></p>
         <a class="join" href="https://docs.google.com/forms/d/e/1FAIpQLSeArWdvpz_j9hCHNL79Ht8l-Qi7y9VQzHvxxy8c_sZWxtyXIQ/viewform?usp=publish-editor">お茶会に申し込む <span>→</span></a>
-        <small>11月1日・杜ノ夢・15名ほど</small>
+        <small>11月1日・杜ノ夢・20名ほど</small>
       </div>
     </section>
 
