@@ -117,6 +117,7 @@ useHead({
           <div><dt>日</dt><dd><b>11月1日</b><small>12時30分〜17時</small></dd></div>
           <div><dt>場</dt><dd><b>杜ノ夢</b><small>本所吾妻橋駅から徒歩10分</small></dd></div>
           <div><dt>人</dt><dd><b>15名ほど</b><small>おひとりでも気軽にご参加ください</small></dd></div>
+          <div><dt>費</dt><dd><b>2,000円</b><small>会費</small></dd></div>
         </dl>
         <div class="venue-map">
           <iframe
@@ -404,6 +405,7 @@ html,body{max-width:100%;overflow-x:clip}
 .motion-ready .info-card.is-visible dl div:nth-child(1){transition-delay:.35s}
 .motion-ready .info-card.is-visible dl div:nth-child(2){transition-delay:.45s}
 .motion-ready .info-card.is-visible dl div:nth-child(3){transition-delay:.55s}
+.motion-ready .info-card.is-visible dl div:nth-child(4){transition-delay:.65s}
 .motion-ready .story-card.is-visible .tags span:nth-child(1){transition-delay:.38s}
 .motion-ready .story-card.is-visible .tags span:nth-child(2){transition-delay:.46s}
 .motion-ready .story-card.is-visible .tags span:nth-child(3){transition-delay:.54s}
