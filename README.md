@@ -31,6 +31,9 @@ GitHub Pages内にApps Scriptの受付フォームを埋め込みます。
    公開者によるGoogleの権限承認が必要です。
    `openById` 用の権限は、そのアカウントのスプレッドシート全体を対象とするものですが、
    このコードは設定したシートのA列だけを更新します。
+   受付は初期状態では停止しています。Apps Scriptのプロジェクト設定の
+   「スクリプト プロパティ」に `CHECKIN_ENABLED` = `true` を保存すると開始します。
+   テスト後は `false` に戻します。停止中は直接URLや開いたままのフォームからも更新できません。
 3. 公開結果の `https://script.google.com/macros/s/…/exec` をコピーし、
    GitHubの Settings → Secrets and variables → Actions → Variables に
    **CHECKIN_WEB_APP_URL** というリポジトリ変数で登録します。
@@ -44,6 +47,8 @@ GitHub Pages内にApps Scriptの受付フォームを埋め込みます。
 接続URLが未設定または不正な場合、受付ページは「受付の準備中です」と表示し、
 入力・受付完了の表示は行いません。端末が埋め込み表示を制限する場合に備え、
 設定後はフォームを別画面で開くリンクも表示します。
+接続済みでも `CHECKIN_ENABLED` が `true` 以外なら「受付の準備中です」と表示します。
+当日はこのスクリプト プロパティだけを `true` に変更すれば、同じURLで受付を再開できます。
 Apps Script更新時は「デプロイを管理」から既存デプロイを新しいバージョンに更新すると、
 GitHub側に設定したURLを維持できます。
 

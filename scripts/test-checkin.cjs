@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const code = fs.readFileSync(path.resolve(__dirname, '../apps-script/Code.gs'), 'utf8');
 let rows, writes, released, allowLock, customRule, formula;
-const properties = new Map();
+const properties = new Map([['CHECKIN_ENABLED', 'true']]);
 const lock = {tryLock: () => allowLock, waitLock: () => {}, releaseLock: () => released++};
 const sheet = {
   getSheetId: () => 533590447,
@@ -53,4 +53,8 @@ const html = vm.runInContext('PAGE_HTML_', context);
 assert.equal((html.match(/<input\b/g) || []).length, 1);
 assert.ok(!html.includes('id="lovot"'));
 new vm.Script(html.match(/<script>([\s\S]*)<\/script>/)[1]); tests++;
+properties.set('CHECKIN_ENABLED', 'false');
+writes = [];
+assert.equal(context.checkIn({owner:'テストA',token:validToken}).status, 'closed');
+assert.deepEqual(writes, []); tests++;
 console.log(`${tests} checks passed. Production sheet untouched.`);

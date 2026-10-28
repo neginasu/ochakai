@@ -7,8 +7,7 @@ const SETTINGS = Object.freeze({
 });
 
 function doGet() {
-  const token = makeToken_();
-  const html = PAGE_HTML_.replace('__PAGE_TOKEN__', token);
+  const html = isOpen_() ? PAGE_HTML_.replace('__PAGE_TOKEN__', makeToken_()) : CLOSED_HTML_;
   return HtmlService.createHtmlOutput(html)
     .setTitle('小さな森のお茶会｜チェックイン')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
@@ -17,6 +16,7 @@ function doGet() {
 
 /** 公開する書き込み窓口。本人入力と照合できた1行だけを受付済みにします。 */
 function checkIn(payload) {
+  if (!isOpen_()) return closedResponse_();
   if (!payload || !validToken_(payload.token)) {
     return {status: 'expired', message: 'ページの有効期限が切れました。再読み込みしてお試しください。'};
   }
@@ -29,6 +29,7 @@ function checkIn(payload) {
     return {status: 'busy', message: 'ただいま受付が混み合っています。少し待ってからもう一度送信してください。'};
   }
   try {
+    if (!isOpen_()) return closedResponse_();
     const book = SpreadsheetApp.openById(SETTINGS.spreadsheetId);
     const sheet = book.getSheets().find(s => s.getSheetId() === SETTINGS.sheetId);
     if (!sheet) throw new Error('Configured sheet not found');
@@ -65,6 +66,14 @@ function checkIn(payload) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function isOpen_() {
+  return PropertiesService.getScriptProperties().getProperty('CHECKIN_ENABLED') === 'true';
+}
+
+function closedResponse_() {
+  return {status: 'closed', message: '受付の準備中です。受付スタッフにお声がけください。'};
 }
 
 function standardCheckbox_(values) {
@@ -187,3 +196,7 @@ next.addEventListener('click',function(){form.hidden=false;result.hidden=true;ne
 })();
 </script>
 </body></html>`;
+
+const CLOSED_HTML_ = `<!doctype html><html lang="ja"><head><meta charset="utf-8"><style>
+*{box-sizing:border-box}body{margin:0;background:#f4f6ef;color:#243f33;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;text-align:center;padding:70px 24px;line-height:2}main{max-width:520px;margin:auto}svg{width:64px;height:64px;stroke:#34634b;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}h1{font-size:27px;line-height:1.6;margin:14px 0 20px}p{font-size:14px;color:#607063}.event{font-size:12px;letter-spacing:.1em;margin-top:22px}
+</style></head><body><main><svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V29M32 37C17 37 12 25 13 12c14-1 23 5 23 17M33 43c0-15 8-23 21-24 2 14-5 26-21 24Z"/><path d="m21 22 11 15m13-7-12 13"/></svg><p class="event">LOVOT 森のお茶会</p><h1>受付の準備中です</h1><p>当日の受付は、こちらのページから行えます。<br>お急ぎの方は、受付スタッフにお声がけください。</p></main></body></html>`;
