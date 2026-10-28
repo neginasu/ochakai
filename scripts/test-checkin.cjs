@@ -10,7 +10,9 @@ const lock = {tryLock: () => allowLock, waitLock: () => {}, releaseLock: () => r
 const sheet = {
   getSheetId: () => 533590447,
   getLastRow: () => rows.length,
-  getRange: (row, col, height) => height !== undefined ? {getValues: () => rows} : {
+  getRange: (row, col, height, width) => height !== undefined ? {
+    getValues: () => rows.slice(row - 1, row - 1 + height).map(values => values.slice(col - 1, col - 1 + width))
+  } : {
     getValue: () => rows[row - 1][0],
     getFormula: () => formula,
     getDataValidation: () => ({getCriteriaType: () => 'CHECKBOX', getCriteriaValues: () => customRule}),
@@ -19,6 +21,10 @@ const sheet = {
 };
 const context = vm.createContext({
   console, Date,
+  HtmlService: {
+    XFrameOptionsMode: {ALLOWALL: 'ALLOWALL'},
+    createHtmlOutput: html => ({html, setTitle() {return this;}, setXFrameOptionsMode() {return this;}, addMetaTag() {return this;}})
+  },
   LockService: {getScriptLock: () => lock},
   SpreadsheetApp: {openById: () => ({getSheets: () => [sheet]}), flush: () => {}, DataValidationCriteria: {CHECKBOX: 'CHECKBOX'}},
   PropertiesService: {getScriptProperties: () => ({getProperty: key => properties.get(key), setProperty: (key, value) => properties.set(key, value)})},
@@ -50,11 +56,30 @@ assert.equal(context.checkIn({owner: 'テストA', token: 'forged'}).status, 'ex
 const oldBody = (Date.now() - 7 * 60 * 60 * 1000) + '-old';
 assert.equal(context.checkIn({owner: 'テストA', token: oldBody + '.' + context.sign_(oldBody)}).status, 'expired'); tests++;
 const html = vm.runInContext('PAGE_HTML_', context);
-assert.equal((html.match(/<input\b/g) || []).length, 1);
+assert.equal((html.match(/<select\b/g) || []).length, 1);
+assert.equal((html.match(/<input\b/g) || []).length, 0);
 assert.ok(!html.includes('id="lovot"'));
 new vm.Script(html.match(/<script>([\s\S]*)<\/script>/)[1]); tests++;
+rows = [[false,'最初の人'],[false,''],[false,' テストＡ '],[false,'テストA'],[false,'次の人']];
+assert.deepEqual(Array.from(context.loadOwnerNames_()), ['最初の人','テストＡ','次の人']); tests++;
+rows = [[false,'<script>&"\' $& さん']];
+const rendered = context.doGet().html;
+assert.ok(rendered.includes('&lt;script&gt;&amp;&quot;&#39; $&amp; さん'));
+assert.ok(!rendered.includes('<option value="<script>'));
+assert.ok(!rendered.includes('__OWNER_OPTIONS__'));
+assert.ok(!rendered.includes('__PAGE_TOKEN__')); tests++;
+properties.set('CHECKIN_EXCLUDED_OWNERS', JSON.stringify(['テストA']));
+allowLock = true;
+rows = [[false, 'テストＡ'], [false, '別の人']];
+assert.deepEqual(Array.from(context.loadOwnerNames_()), ['別の人']);
+writes = [];
+assert.equal(context.checkIn({owner:'テストA',token:validToken}).status, 'not_found');
+assert.deepEqual(writes, []); tests++;
+properties.delete('CHECKIN_EXCLUDED_OWNERS');
 properties.set('CHECKIN_ENABLED', 'false');
 writes = [];
 assert.equal(context.checkIn({owner:'テストA',token:validToken}).status, 'closed');
 assert.deepEqual(writes, []); tests++;
+assert.ok(!context.doGet().html.includes('<select'));
+assert.ok(context.doGet().html.includes('受付の準備中です')); tests++;
 console.log(`${tests} checks passed. Production sheet untouched.`);
