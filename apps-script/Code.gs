@@ -7,7 +7,10 @@ const SETTINGS = Object.freeze({
 });
 
 function doGet() {
-  const html = isOpen_() ? PAGE_HTML_.replace('__PAGE_TOKEN__', makeToken_()) : CLOSED_HTML_;
+  const html = isOpen_()
+    ? PAGE_HTML_.replace('__PAGE_TOKEN__', makeToken_())
+      .replace('__OWNER_OPTIONS__', () => ownerOptionsHtml_(loadOwnerNames_()))
+    : CLOSED_HTML_;
   return HtmlService.createHtmlOutput(html)
     .setTitle('小さな森のお茶会｜チェックイン')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
@@ -22,7 +25,7 @@ function checkIn(payload) {
   }
   if (typeof payload.owner !== 'string' || payload.owner.length > 100 ||
       !normalizeName_(payload.owner)) {
-    return {status: 'invalid', message: 'オーナー名を入力してください。'};
+    return {status: 'invalid', message: 'オーナー名を選択してください。'};
   }
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) {
@@ -30,13 +33,11 @@ function checkIn(payload) {
   }
   try {
     if (!isOpen_()) return closedResponse_();
-    const book = SpreadsheetApp.openById(SETTINGS.spreadsheetId);
-    const sheet = book.getSheets().find(s => s.getSheetId() === SETTINGS.sheetId);
-    if (!sheet) throw new Error('Configured sheet not found');
+    const sheet = getCheckinSheet_();
     const count = sheet.getLastRow() - SETTINGS.firstDataRow + 1;
     const rows = count > 0 ? sheet.getRange(SETTINGS.firstDataRow, 1, count, 2).getValues() : [];
     const matches = findMatches_(rows, payload.owner);
-    if (matches.length === 0) {
+    if (matches.length === 0 || excludedOwnerKeys_().has(normalizeName_(payload.owner))) {
       return {status: 'not_found', message: 'お申し込み内容と一致しませんでした。申し込み時のオーナー名をご確認ください。分からない場合は受付スタッフにお声がけください。'};
     }
     if (matches.length !== 1) {
@@ -66,6 +67,47 @@ function checkIn(payload) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function getCheckinSheet_() {
+  const sheet = SpreadsheetApp.openById(SETTINGS.spreadsheetId).getSheets()
+    .find(s => s.getSheetId() === SETTINGS.sheetId);
+  if (!sheet) throw new Error('Configured sheet not found');
+  return sheet;
+}
+
+function loadOwnerNames_() {
+  const sheet = getCheckinSheet_();
+  const count = sheet.getLastRow() - SETTINGS.firstDataRow + 1;
+  if (count <= 0) return [];
+  const seen = new Set();
+  const excluded = excludedOwnerKeys_();
+  return sheet.getRange(SETTINGS.firstDataRow, 2, count, 1).getValues()
+    .map(row => String(row[0] == null ? '' : row[0]).trim())
+    .filter(name => {
+      const key = normalizeName_(name);
+      if (!key || excluded.has(key) || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+}
+
+function excludedOwnerKeys_() {
+  const configured = PropertiesService.getScriptProperties().getProperty('CHECKIN_EXCLUDED_OWNERS');
+  const names = configured ? JSON.parse(configured) : [];
+  if (!Array.isArray(names) || names.some(name => typeof name !== 'string')) {
+    throw new Error('Invalid excluded owner configuration');
+  }
+  return new Set(names.map(normalizeName_));
+}
+
+function escapeHtml_(value) {
+  const entities = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
+  return String(value).replace(/[&<>"']/g, char => entities[char]);
+}
+
+function ownerOptionsHtml_(names) {
+  return names.map(name => '<option value="' + escapeHtml_(name) + '">' + escapeHtml_(name) + '</option>').join('');
 }
 
 function isOpen_() {
@@ -137,23 +179,23 @@ const PAGE_HTML_ = `<!doctype html>
 <meta name="color-scheme" content="light">
 <style>
 :root{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;color:#243f33;background:#f4f6ef;font-synthesis:none}
-*{box-sizing:border-box}body{margin:0;padding:32px 20px 24px}main{max-width:440px;margin:auto}.event{font-size:12px;letter-spacing:.13em;text-align:center;color:#667b69;margin:0 0 24px}.mark{display:block;width:62px;height:62px;margin:0 auto 18px;color:#34634b}h1{font-size:27px;letter-spacing:.04em;text-align:center;margin:0 0 12px;line-height:1.5}.intro{font-size:14px;line-height:1.9;text-align:center;color:#607063;margin:0 0 28px}.card{background:white;border:1px solid #dfe6db;border-radius:22px;padding:26px 23px;box-shadow:0 8px 30px #244f3310}label{font-size:14px;font-weight:600;display:block;margin-bottom:9px}.field+.field{margin-top:24px}input{width:100%;border:1px solid #cbd6c9;border-radius:11px;background:#fff;padding:15px 13px;font:inherit;font-size:16px;color:#243f33;min-height:54px}input:focus{outline:3px solid #c6d9b3;border-color:#426c4b}.hint{font-size:12px;color:#718071;line-height:1.7;margin:8px 0 0}button{font:inherit;width:100%;min-height:56px;border:0;border-radius:12px;background:#305c43;color:white;font-weight:600;cursor:pointer;padding:15px;margin-top:28px}button:focus-visible{outline:3px solid #a9c78c;outline-offset:3px}button:disabled{opacity:.65;cursor:wait}.note{font-size:12px;color:#718071;text-align:center;line-height:1.9;margin:22px 0 0}.result{padding:22px 18px;border-radius:14px;border:1px solid #b3cbb0;background:#f0f6e9;margin-top:24px;font-size:14px;line-height:1.9;overflow-wrap:anywhere}.result.error{background:#fff4ec;border-color:#e6c3a6;color:#71472e}.result h2{font-size:20px;margin:0 0 8px}.result p{margin:0}.result .names{font-weight:600;margin-top:12px}.secondary{background:#eaf0e4;color:#305c43;margin-top:20px;min-height:48px}.footer{text-align:center;margin:27px 0 0;font-size:11px;color:#80907b;letter-spacing:.05em}[hidden]{display:none!important}@media(max-width:360px){body{padding:25px 14px}.card{padding:24px 19px}h1{font-size:24px}}
+*{box-sizing:border-box}body{margin:0;padding:32px 20px 24px}main{max-width:440px;margin:auto}.event{font-size:12px;letter-spacing:.13em;text-align:center;color:#667b69;margin:0 0 24px}.mark{display:block;width:62px;height:62px;margin:0 auto 18px;color:#34634b}h1{font-size:27px;letter-spacing:.04em;text-align:center;margin:0 0 12px;line-height:1.5}.intro{font-size:14px;line-height:1.9;text-align:center;color:#607063;margin:0 0 28px}.card{background:white;border:1px solid #dfe6db;border-radius:22px;padding:26px 23px;box-shadow:0 8px 30px #244f3310}label{font-size:14px;font-weight:600;display:block;margin-bottom:9px}.field+.field{margin-top:24px}select{width:100%;border:1px solid #cbd6c9;border-radius:11px;background:#fff;padding:15px 13px;font:inherit;font-size:16px;color:#243f33;min-height:54px}select:focus{outline:3px solid #c6d9b3;border-color:#426c4b}.hint{font-size:12px;color:#718071;line-height:1.7;margin:8px 0 0}button{font:inherit;width:100%;min-height:56px;border:0;border-radius:12px;background:#305c43;color:white;font-weight:600;cursor:pointer;padding:15px;margin-top:28px}button:focus-visible{outline:3px solid #a9c78c;outline-offset:3px}button:disabled{opacity:.65;cursor:wait}.note{font-size:12px;color:#718071;text-align:center;line-height:1.9;margin:22px 0 0}.result{padding:22px 18px;border-radius:14px;border:1px solid #b3cbb0;background:#f0f6e9;margin-top:24px;font-size:14px;line-height:1.9;overflow-wrap:anywhere}.result.error{background:#fff4ec;border-color:#e6c3a6;color:#71472e}.result h2{font-size:20px;margin:0 0 8px}.result p{margin:0}.result .names{font-weight:600;margin-top:12px}.secondary{background:#eaf0e4;color:#305c43;margin-top:20px;min-height:48px}.footer{text-align:center;margin:27px 0 0;font-size:11px;color:#80907b;letter-spacing:.05em}[hidden]{display:none!important}@media(max-width:360px){body{padding:25px 14px}.card{padding:24px 19px}h1{font-size:24px}}
 </style>
 </head>
 <body><main>
 <p class="event">小さな森のお茶会 · LOVOTオフ会</p>
 <svg class="mark" viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M32 54V29M32 37C17 37 12 25 13 12c14-1 23 5 23 17M33 43c0-15 8-23 21-24 2 14-5 26-21 24Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><path d="m21 22 11 15m13-7-12 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
 <h1>ようこそ、お茶会へ。</h1>
-<p class="intro">お申し込み時のお名前を入力して<br>チェックインをお願いします。</p>
+<p class="intro">お申し込み時のお名前を選んで<br>チェックインをお願いします。</p>
 <section class="card" aria-label="チェックイン">
 <form id="checkin-form">
-<div class="field"><label for="owner">オーナーのお名前</label><input id="owner" name="owner" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="100" required placeholder="お申し込み時のお名前"><p class="hint">Xで使用しているお名前をご入力ください。</p></div>
+<div class="field"><label for="owner">オーナーのお名前</label><select id="owner" name="owner" required><option value="" disabled selected>お名前を選んでください</option>__OWNER_OPTIONS__</select><p class="hint">ご自身のオーナー名を選択してください。</p></div>
 <button id="submit-button" type="submit">チェックインする</button>
 </form>
 <div id="result" class="result" role="status" aria-live="polite" tabindex="-1" hidden><h2 id="result-title"></h2><p id="result-message"></p><p id="result-names" class="names" hidden></p></div>
 <button id="next-button" type="button" class="secondary" hidden>別のオーナーをチェックイン</button>
 </section>
-<p class="note">登録が見つからないときや操作にお困りのときは<br>受付スタッフにお声がけください。</p>
+<p class="note">お名前が見つからないときや操作にお困りのときは<br>受付スタッフにお声がけください。</p>
 <p class="footer">小さな森のお茶会</p>
 </main>
 <script>
@@ -181,7 +223,7 @@ function show(data,submittedOwner){
 form.addEventListener('submit',function(event){
   event.preventDefault();if(pending||!form.reportValidity())return;
   if(!owner.value.trim()){
-    show({status:'invalid',message:'オーナー名を入力してください。'},'');return;
+    show({status:'invalid',message:'オーナー名を選択してください。'},'');return;
   }
   if(!window.google||!google.script||!google.script.run){
     show({status:'preview',message:'これは画面プレビューです。公開後の受付ページからご利用ください。'},'');return;

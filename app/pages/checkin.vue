@@ -8,7 +8,7 @@ const checkinUrl = /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/e
 
 useSeoMeta({
   title: '当日チェックイン｜LOVOT 森のお茶会',
-  description: 'お申し込み時のオーナー名で、当日のチェックインをお願いします。',
+  description: 'お申し込み時のオーナー名を選んで、当日のチェックインをお願いします。',
   robots: 'noindex, nofollow'
 })
 
@@ -27,7 +27,7 @@ useHead({ htmlAttrs: { lang: 'ja' } })
       <iframe
         :src="checkinUrl"
         class="checkin-frame"
-        title="オーナー名を入力してチェックイン"
+        title="オーナー名を選んでチェックイン"
         referrerpolicy="no-referrer"
       />
       <p class="checkin-help">
